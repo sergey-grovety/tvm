@@ -71,8 +71,65 @@ def get_optimal_block_config(
     if options and options.dev_force_block_config:
         block_config = [int(v) for v in options.dev_force_block_config.split("x")]
         return vapi.NpuShape3D(height=block_config[0], width=block_config[1], depth=block_config[2])
-    all_valid_block_configs = vapi.npu_find_block_configs(npu_op, accel_config)
-    return _get_optimal_block_config(all_valid_block_configs)
+    # all_valid_block_configs = vapi.npu_find_block_configs(npu_op, accel_config)
+    # return _get_optimal_block_config(all_valid_block_configs)
+    return _find_block_config(npu_op, accel_config)
+
+
+def _find_block_config(npu_op: vapi.NpuOperation, accelerator: vapi.NpuAccelerator) -> vapi.NpuShape3D:
+    from ethosu.vela.architecture_features import Accelerator
+    from ethosu.vela.architecture_features import create_default_arch
+    from ethosu.vela.register_command_stream_generator import resampling_mode_map
+    from ethosu.vela.register_command_stream_util import to_kernel
+    from ethosu.vela.operation import NpuBlockType
+    from ethosu.vela.architecture_allocator import find_block_config
+    from ethosu.vela.shape4d import Shape4D
+
+    if isinstance(npu_op, vapi.NpuConv2DOperation):
+        block_type = NpuBlockType.ConvolutionMxN
+    elif isinstance(npu_op, vapi.NpuConvDepthWiseOperation):
+        block_type = NpuBlockType.ConvolutionDepthWise
+    elif isinstance(npu_op, vapi.NpuPoolingOperation):
+        block_type = NpuBlockType.ReduceSum if npu_op.sub_op_type == vapi.NpuPoolingOp.REDUCE_SUM else NpuBlockType.Pooling
+    elif isinstance(npu_op, vapi.NpuElementWiseOperation):
+        block_type = NpuBlockType.ElementWise
+    else:
+        assert 0, "Unsupported operation"
+
+    ifm_shape = Shape4D(1, npu_op.ifm.shape.width, npu_op.ifm.shape.height, npu_op.ifm.shape.depth)
+    ifm2_shape = None
+    if npu_op.ifm2:
+        ifm2_shape = Shape4D(1, npu_op.ifm2.shape.width, npu_op.ifm2.shape.height, npu_op.ifm2.shape.depth)
+    ofm_shape = Shape4D(1, npu_op.ofm.shape.width, npu_op.ofm.shape.height, npu_op.ofm.shape.depth)
+
+    ifm_resampling_mode = resampling_mode_map[npu_op.ifm_upscale]
+    ifm_bits = npu_op.ifm.data_type.size_in_bits()
+    lut_banks = 0
+    if npu_op.activation:
+        lut_banks = 2 if npu_op.activation.op_type == vapi.NpuActivationOp.TABLE_LOOKUP else 0
+
+    has_scaling = True
+    for tensor in [npu_op.ifm, npu_op.ifm2, npu_op.ofm]:
+        if tensor and tensor.quantization is None:
+            has_scaling = False
+            break
+
+    arch = create_default_arch(Accelerator.from_npu_accelerator(accelerator))
+
+    cfg = find_block_config(
+        arch,
+        block_type,
+        ofm_shape,
+        ifm_shape,
+        ifm2_shape,
+        npu_op.ifm2_scalar is not None,
+        ifm_bits,
+        to_kernel(npu_op.kernel),
+        lut_banks,
+        has_scaling,
+        ifm_resampling_mode,
+    )
+    return vapi.NpuShape3D(cfg.ofm_block.height, cfg.ofm_block.width, cfg.ofm_block.depth)
 
 
 def _get_optimal_block_config(all_valid_block_configs: List[vapi.NpuShape3D]) -> vapi.NpuShape3D:
