@@ -96,11 +96,11 @@ def _find_block_config(npu_op: vapi.NpuOperation, accelerator: vapi.NpuAccelerat
     else:
         assert 0, "Unsupported operation"
 
-    ifm_shape = Shape4D(1, npu_op.ifm.shape.width, npu_op.ifm.shape.height, npu_op.ifm.shape.depth)
+    ifm_shape = Shape4D(1, npu_op.ifm.shape.height, npu_op.ifm.shape.width, npu_op.ifm.shape.depth)
     ifm2_shape = None
     if npu_op.ifm2:
-        ifm2_shape = Shape4D(1, npu_op.ifm2.shape.width, npu_op.ifm2.shape.height, npu_op.ifm2.shape.depth)
-    ofm_shape = Shape4D(1, npu_op.ofm.shape.width, npu_op.ofm.shape.height, npu_op.ofm.shape.depth)
+        ifm2_shape = Shape4D(1, npu_op.ifm2.shape.height, npu_op.ifm2.shape.width, npu_op.ifm2.shape.depth)
+    ofm_shape = Shape4D(1, npu_op.ofm.shape.height, npu_op.ofm.shape.width, npu_op.ofm.shape.depth)
 
     ifm_resampling_mode = resampling_mode_map[npu_op.ifm_upscale]
     ifm_bits = npu_op.ifm.data_type.size_in_bits()
