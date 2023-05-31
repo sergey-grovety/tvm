@@ -127,6 +127,8 @@ class SoftmaxRewriter(DFPatternCallback):
             reversed_operands=False,
             ofm_dtype="int32",
             activation="LUT",
+            clip_min=-255,
+            clip_max=0,
         )
 
         # PASS 2 - SHR
@@ -165,6 +167,9 @@ class SoftmaxRewriter(DFPatternCallback):
             ofm_channels=1,
             upscale="NONE",
             ofm_dtype="int32",
+            activation="CLIP",
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 4 - CLZ
@@ -177,6 +182,9 @@ class SoftmaxRewriter(DFPatternCallback):
             ofm_scale=0.0,
             ofm_zero_point=int(params.ifm.q_params.zero_point),
             ofm_channels=1,
+            activation="CLIP",
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 5 - Sub
@@ -196,6 +204,9 @@ class SoftmaxRewriter(DFPatternCallback):
             ifm2_channels=1,
             reversed_operands=False,
             ofm_dtype="int32",
+            activation="CLIP",
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 6 - Sub
@@ -215,6 +226,9 @@ class SoftmaxRewriter(DFPatternCallback):
             ifm2_channels=1,
             reversed_operands=False,
             ofm_dtype="int32",
+            activation="CLIP",
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 7 - SHL
@@ -255,6 +269,9 @@ class SoftmaxRewriter(DFPatternCallback):
             ifm2_channels=1,
             reversed_operands=False,
             ofm_dtype="int32",
+            activation="CLIP",
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 9 - SHL
@@ -321,8 +338,8 @@ class SoftmaxRewriter(DFPatternCallback):
             reversed_operands=False,
             ofm_dtype="int32",
             activation="CLIP",
-            clip_min=-128 * 2,
-            clip_max=127 * 2,
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 12 - Add
@@ -368,8 +385,8 @@ class SoftmaxRewriter(DFPatternCallback):
                 reversed_operands=False,
                 ofm_dtype="int32",
                 activation="CLIP",
-                clip_min=-128 * 2,
-                clip_max=127 * 2,
+                clip_min=-128,
+                clip_max=127,
             )
 
             # PASS 14, 19, 24 - Sub
@@ -388,6 +405,9 @@ class SoftmaxRewriter(DFPatternCallback):
                 ifm2_channels=1,
                 reversed_operands=False,
                 ofm_dtype="int32",
+                activation="CLIP",
+                clip_min=-128,
+                clip_max=127,
             )
 
             # PASS 15, 20, 25 - Mul
@@ -407,8 +427,8 @@ class SoftmaxRewriter(DFPatternCallback):
                 reversed_operands=False,
                 ofm_dtype="int32",
                 activation="CLIP",
-                clip_min=-128 * 2,
-                clip_max=127 * 2,
+                clip_min=-128,
+                clip_max=127,
             )
 
             # PASS 16, 21, 26 - Mul
@@ -448,6 +468,9 @@ class SoftmaxRewriter(DFPatternCallback):
                 ifm2_channels=1,
                 reversed_operands=False,
                 ofm_dtype="int32",
+                activation="CLIP",
+                clip_min=-128,
+                clip_max=127,
             )
 
         # PASS 28 - Mul
@@ -489,8 +512,8 @@ class SoftmaxRewriter(DFPatternCallback):
             reversed_operands=False,
             ofm_dtype="int32",
             activation="CLIP",
-            clip_min=-128 * 2,
-            clip_max=127 * 2,
+            clip_min=-128,
+            clip_max=127,
         )
 
         # PASS 30 - SHR
