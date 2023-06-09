@@ -2266,11 +2266,11 @@ def pattern_table() -> List[Tuple[str, tvm.relay.dataflow_pattern.DFPattern, Cal
             sum_pattern(),
             lambda pat: SumParams(pat).is_valid(),
         ),
-        (
-            SoftMaxParams.composite_name,
-            softmax_pattern(),
-            lambda pat: SoftMaxParams(pat).is_valid(),
-        ),
+        # (
+        #     SoftMaxParams.composite_name,
+        #     softmax_pattern(),
+        #     lambda pat: SoftMaxParams(pat).is_valid(),
+        # ),
         (
             LeakyReLUParams.composite_name,
             leaky_relu_pattern(),
