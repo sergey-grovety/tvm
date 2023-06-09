@@ -925,18 +925,20 @@ def _create_npu_rounding_mode(
 def _create_npu_dma_op(serial_copy):
     """This is a helper function to capture the list of arguments
     to create a NpuDmaOperation object"""
-    data_type_bytes = np.iinfo(np.dtype(serial_copy.read_address.dtype)).bits // 8
+    data_type_bytes = np.iinfo(np.dtype(serial_copy.read_address.dtype)).bits // 8    
+    length = int(serial_copy.length.value) * data_type_bytes
+    length = 8 if length < 8 else length
     src = vapi.NpuAddressRange(
         # region will be updated later
         region=0,
         address=serial_copy.read_address,
-        length=int(serial_copy.length.value) * data_type_bytes,
+        length=length,
     )
     dest = vapi.NpuAddressRange(
         # region will be updated later
         region=0,
         address=serial_copy.write_address,
-        length=int(serial_copy.length.value) * data_type_bytes,
+        length=length,
     )
     return vapi.NpuDmaOperation(src, dest)
 
