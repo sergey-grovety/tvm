@@ -148,8 +148,8 @@ def copy_constants():
                     index = is_same.index(True)
                     # Along with constants, also skip for FullyConnected to correspond
                     # with Vela behavior
-                    if index in const_dict and not _is_matmul(reader):
-                        sch.cache_read(tensor, "global", [reader])
+                    # if index in const_dict and not _is_matmul(reader):
+                    #     sch.cache_read(tensor, "global", [reader])
 
                 elif isinstance(tensor.op, tvm.te.ComputeOp):
                     if "lut" in tensor.op.attrs.keys():
